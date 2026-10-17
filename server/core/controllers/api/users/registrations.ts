@@ -16,7 +16,6 @@ import { auditLoggerFactory, UserAuditView } from '../../../helpers/audit-logger
 import { createLogger } from '../../../helpers/logger.js'
 import { CONFIG } from '../../../initializers/config.js'
 import { Notifier } from '../../../lib/notifier/index.js'
-import { checkReason, logFailedAttempt } from '../../../lib/spam-filter.js'
 import {
   buildUser,
   createUserAccountAndChannelAndPlaylist,
@@ -135,22 +134,6 @@ async function requestRegistration (req: express.Request, res: express.Response)
 
   await registration.save()
 
-  // Block registration attempts that trigger the spam filter so no emails are sent
-  const spamCheck: string | undefined = await checkReason(registration.registrationReason)
-  if (spamCheck !== undefined) {
-    const spammerIP: string = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-    const out: string = `Failed registration attempt by ${spammerIP}\n${spamCheck}`
-
-    await logFailedAttempt(out)
-    
-    return res.json({
-      state: {
-        id: UserRegistrationState.REJECTED,
-        label: USER_REGISTRATION_STATES[UserRegistrationState.REJECTED]
-      }
-    })
-  }
-  
   if (CONFIG.SIGNUP.REQUIRES_EMAIL_VERIFICATION) {
     await sendVerifyRegistrationRequestEmail(registration)
   }
