@@ -140,7 +140,7 @@ async function requestRegistration (req: express.Request, res: express.Response)
   // Block registration attempts that trigger the spam filter so no emails are sent
   const spamCheck: string | undefined = await checkReason(registration.registrationReason)
   if (spamCheck !== undefined) {
-    const spammerIP: string = req.ip
+    const spammerIP: string = req.headers['x-forwarded-for'] || req.socket.remoteAddress
     const out: string = `Failed registration attempt by ${spammerIP}\n${spamCheck}`
 
     await logFailedAttempt(out)
