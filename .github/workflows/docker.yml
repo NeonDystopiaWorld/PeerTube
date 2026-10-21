@@ -26,9 +26,9 @@ jobs:
       - name: Set matrix for build
         id: set-matrix
         run: |
-          one="{ \"build-peertube\": true, \"file\": \"./support/docker/production/Dockerfile\", \"ref\": \"develop\", \"tags\": \"chocobozzz/peertube:develop-trixie,chocobozzz/peertube:develop\" }"
-          two="{ \"build-peertube\": true, \"file\": \"./support/docker/production/Dockerfile\", \"ref\": \"master\", \"tags\": \"chocobozzz/peertube:production-trixie,chocobozzz/peertube:$(git describe --abbrev=0)-trixie,chocobozzz/peertube:production,chocobozzz/peertube:$(git describe --abbrev=0)\" }"
-          three="{ \"build-peertube\": false, \"file\": \"./support/docker/production/Dockerfile.nginx\", \"ref\": \"master\", \"tags\": \"chocobozzz/peertube-webserver:latest\" }"
+          one="{ \"build-peertube\": true, \"file\": \"./support/docker/production/Dockerfile\", \"ref\": \"develop\", \"tags\": \"NeonDystopiaWorld/peertube:develop-trixie,NeonDystopiaWorld/peertube:develop\" }"
+          two="{ \"build-peertube\": true, \"file\": \"./support/docker/production/Dockerfile\", \"ref\": \"master\", \"tags\": \"NeonDystopiaWorld/peertube:production-trixie,NeonDystopiaWorld/peertube:$(git describe --abbrev=0)-trixie,NeonDystopiaWorld/peertube:production,NeonDystopiaWorld/peertube:$(git describe --abbrev=0)\" }"
+          three="{ \"build-peertube\": false, \"file\": \"./support/docker/production/Dockerfile.nginx\", \"ref\": \"master\", \"tags\": \"NeonDystopiaWorld/peertube-webserver:latest\" }"
 
           matrix="[$one,$two,$three]"
           echo "matrix={\"include\":$matrix}" >> $GITHUB_OUTPUT
