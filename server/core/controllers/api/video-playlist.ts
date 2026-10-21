@@ -79,6 +79,15 @@ videoPlaylistRouter.get(
 
 videoPlaylistRouter.get('/:playlistId', asyncMiddleware(videoPlaylistsGetValidator('summary')), getVideoPlaylist)
 
+videoPlaylistRouter.get(
+  '/:playlistId/videos',
+  asyncMiddleware(videoPlaylistsGetValidator('summary')),
+  paginationValidator,
+  setDefaultPagination,
+  optionalAuthenticate,
+  asyncMiddleware(listVideosOfPlaylist)
+)
+
 videoPlaylistRouter.post(
   '/',
   authenticate,
@@ -105,15 +114,6 @@ videoPlaylistRouter.delete(
 // ---------------------------------------------------------------------------
 // Playlist elements
 // ---------------------------------------------------------------------------
-
-videoPlaylistRouter.get(
-  '/:playlistId/videos',
-  asyncMiddleware(videoPlaylistsGetValidator('summary')),
-  paginationValidator,
-  setDefaultPagination,
-  optionalAuthenticate,
-  asyncMiddleware(listVideosOfPlaylist)
-)
 
 videoPlaylistRouter.post(
   '/:playlistId/videos',
@@ -148,6 +148,8 @@ videoPlaylistRouter.delete(
 export {
   videoPlaylistRouter
 }
+
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 

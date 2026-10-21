@@ -1,0 +1,21 @@
+# Create a copy of this and populate the filter as such
+# - filter_name: The name of your filter goes here
+#   filter:
+#     - You can add string literals or regular expressions for filters to test against
+#   reason: Why this is being filtered, not shown to registrants, only to you!
+
+filters:
+  # String literals can be used for filters
+  - filter_name: example-1
+    filter:
+      - foo
+      - bar
+      - baz
+    reason: This is an example filter
+
+  # Regex can also be used to create filters 
+  - filter_name: example-2
+    filter:
+      - hello+world
+      - a+b+cde\r
+    reason: This is another example filter

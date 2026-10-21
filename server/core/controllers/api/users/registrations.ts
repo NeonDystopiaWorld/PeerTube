@@ -1,5 +1,4 @@
 import { pick } from '@peertube/peertube-core-utils'
-import { USER_REGISTRATION_STATES } from '@server/initializers/constants.js'
 import {
   HttpStatusCode,
   UserRegister,
@@ -8,6 +7,7 @@ import {
   UserRegistrationUpdateState,
   UserRight
 } from '@peertube/peertube-models'
+import { USER_REGISTRATION_STATES } from '@server/initializers/constants.js'
 import { Emailer } from '@server/lib/emailer.js'
 import { Hooks } from '@server/lib/plugins/hooks.js'
 import { UserRegistrationModel } from '@server/models/user/user-registration.js'
@@ -16,6 +16,7 @@ import { auditLoggerFactory, UserAuditView } from '../../../helpers/audit-logger
 import { createLogger } from '../../../helpers/logger.js'
 import { CONFIG } from '../../../initializers/config.js'
 import { Notifier } from '../../../lib/notifier/index.js'
+import { checkReason, logFailedAttempt } from '../../../lib/spam-filter.js'
 import {
   buildUser,
   createUserAccountAndChannelAndPlaylist,
@@ -48,9 +49,11 @@ const auditLogger = auditLoggerFactory('users')
 
 const registrationRateLimiter = buildRateLimiter({
   enabled: CONFIG.RATES_LIMIT.SIGNUP.ENABLED,
+  name: 'signup',
   windowMs: CONFIG.RATES_LIMIT.SIGNUP.WINDOW_MS,
   max: CONFIG.RATES_LIMIT.SIGNUP.MAX,
-  skipFailedRequests: true
+  skipFailedRequests: true,
+  failOnUnavailableRedis: true
 })
 
 const registrationsRouter = express.Router()
@@ -134,6 +137,22 @@ async function requestRegistration (req: express.Request, res: express.Response)
 
   await registration.save()
 
+  // Block registration attempts that trigger the spam filter so no emails are sent
+  const spamCheck: string | undefined = await checkReason(registration.registrationReason)
+  if (spamCheck !== undefined) {
+    const spammerIP: string = req.ip
+    const out: string = `Failed registration attempt by ${spammerIP}\n${spamCheck}`
+
+    await logFailedAttempt(out)
+    
+    return res.json({
+      state: {
+        id: UserRegistrationState.REJECTED,
+        label: USER_REGISTRATION_STATES[UserRegistrationState.REJECTED]
+      }
+    })
+  }
+  
   if (CONFIG.SIGNUP.REQUIRES_EMAIL_VERIFICATION) {
     await sendVerifyRegistrationRequestEmail(registration)
   }
